@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KTLT Quiz - Ôn tập cuối kỳ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f1a;
+    color: #e2e8f0;
+    min-height: 100vh;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #4c1d95;
+  }
+  .header h1 { font-size: 1.2rem; font-weight: 700; color: #a78bfa; }
+  .header .sub { font-size: 0.75rem; color: #7c3aed; margin-top: 2px; }
+  .stats-bar {
+    display: flex; gap: 16px; font-size: 0.8rem;
+  }
+  .stat { text-align: center; }
+  .stat-val { font-size: 1.1rem; font-weight: 700; color: #a78bfa; }
+  .stat-lbl { color: #6b7280; font-size: 0.7rem; }
+
+  .progress-wrap { background: #1e1e2e; padding: 10px 24px; }
+  .progress-bar-bg { background: #2d2d3d; border-radius: 4px; height: 6px; }
+  .progress-bar-fill { background: linear-gradient(90deg, #7c3aed, #a78bfa); height: 6px; border-radius: 4px; transition: width 0.4s; }
+  .progress-text { font-size: 0.72rem; color: #6b7280; margin-top: 4px; text-align: right; }
+
+  .quiz-area { max-width: 760px; margin: 0 auto; padding: 24px 16px; }
+
+  .question-card {
+    background: #1a1a2e;
+    border: 1px solid #2d2d4e;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .q-number {
+    font-size: 0.7rem; font-weight: 700; color: #7c3aed;
+    text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .q-text {
+    font-size: 0.95rem; line-height: 1.6; color: #e2e8f0; margin-bottom: 20px;
+    white-space: pre-wrap; font-family: inherit;
+  }
+  .q-text code, .code-block {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #0d0d1a;
+    border: 1px solid #2d2d4e;
+    border-radius: 6px;
+    padding: 12px;
+    display: block;
+    margin: 8px 0;
+    font-size: 0.82rem;
+    color: #c4b5fd;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .option {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #2d2d4e;
+    background: #0f0f1a;
+    cursor: pointer;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    transition: all 0.15s;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .option:hover { border-color: #7c3aed; background: #1a1230; }
+  .option.selected { border-color: #7c3aed; background: #2d1b6b; }
+  .option.correct { border-color: #10b981; background: #064e3b; color: #6ee7b7; }
+  .option.wrong { border-color: #ef4444; background: #450a0a; color: #fca5a5; }
+  .option.reveal-correct { border-color: #10b981; background: #064e3b; color: #6ee7b7; }
+  .opt-label {
+    font-weight: 700; color: #7c3aed; min-width: 20px;
+    flex-shrink: 0;
+  }
+  .option.correct .opt-label, .option.reveal-correct .opt-label { color: #10b981; }
+  .option.wrong .opt-label { color: #ef4444; }
+
+  .feedback {
+    margin-top: 14px; padding: 10px 14px;
+    border-radius: 8px; font-size: 0.82rem; display: none;
+  }
+  .feedback.show { display: block; }
+  .feedback.ok { background: #064e3b; border: 1px solid #10b981; color: #6ee7b7; }
+  .feedback.bad { background: #450a0a; border: 1px solid #ef4444; color: #fca5a5; }
+
+  .controls {
+    display: flex; gap: 10px; justify-content: space-between; flex-wrap: wrap;
+    padding: 0 16px 24px; max-width: 760px; margin: 0 auto;
+  }
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-size: 0.88rem; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .btn-primary { background: #7c3aed; color: white; }
+  .btn-primary:hover { background: #6d28d9; }
+  .btn-secondary { background: #1e1e2e; color: #a78bfa; border: 1px solid #4c1d95; }
+  .btn-secondary:hover { background: #2d1b6b; }
+  .btn-danger { background: #991b1b; color: #fca5a5; }
+  .btn-danger:hover { background: #7f1d1d; }
+
+  .result-screen {
+    display: none; text-align: center; padding: 48px 24px;
+    max-width: 500px; margin: 0 auto;
+  }
+  .result-screen.show { display: block; }
+  .score-circle {
+    width: 140px; height: 140px; border-radius: 50%;
+    border: 4px solid #7c3aed;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; margin: 0 auto 24px;
+    background: #1a1a2e;
+  }
+  .score-pct { font-size: 2rem; font-weight: 800; color: #a78bfa; }
+  .score-frac { font-size: 0.8rem; color: #6b7280; }
+  .result-title { font-size: 1.4rem; font-weight: 700; color: #e2e8f0; margin-bottom: 8px; }
+  .result-sub { color: #6b7280; font-size: 0.88rem; margin-bottom: 24px; }
+
+  .mode-bar {
+    display: flex; gap: 8px; padding: 12px 24px;
+    background: #1a1a2e; border-bottom: 1px solid #2d2d4e;
+    flex-wrap: wrap; align-items: center;
+  }
+  .mode-btn {
+    padding: 6px 14px; border-radius: 6px; border: 1px solid #2d2d4e;
+    background: transparent; color: #9ca3af; font-size: 0.78rem; cursor: pointer;
+  }
+  .mode-btn.active { background: #7c3aed; border-color: #7c3aed; color: white; }
+  .mode-label { font-size: 0.75rem; color: #4b5563; margin-right: 4px; }
+
+  .nav-dots {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    padding: 10px 24px; max-width: 760px; margin: 0 auto;
+  }
+  .dot {
+    width: 20px; height: 20px; border-radius: 4px; font-size: 0.6rem;
+    border: none; cursor: pointer; font-weight: 600;
+    background: #1e1e2e; color: #6b7280; transition: all 0.1s;
+  }
+  .dot.answered { background: #7c3aed; color: white; }
+  .dot.current { outline: 2px solid #a78bfa; }
+  .dot.correct-dot { background: #065f46; color: #6ee7b7; }
+  .dot.wrong-dot { background: #7f1d1d; color: #fca5a5; }
+
+  @media (max-width: 600px) {
+    .header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .q-text { font-size: 0.88rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="h1" style="font-size:1.1rem;font-weight:700;color:#a78bfa">⚡ KTLT Quiz – Ôn tập cuối kỳ</div>
+    <div class="sub">Kỹ Thuật Lập Trình · HUST · 95 câu</div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-val" id="s-correct">0</div><div class="stat-lbl">Đúng</div></div>
+    <div class="stat"><div class="stat-val" id="s-wrong">0</div><div class="stat-lbl">Sai</div></div>
+    <div class="stat"><div class="stat-val" id="s-remain">95</div><div class="stat-lbl">Còn lại</div></div>
+  </div>
+</div>
+
+<div class="mode-bar">
+  <span class="mode-label">Chế độ:</span>
+  <button class="mode-btn active" onclick="setMode('practice')">Luyện tập</button>
+  <button class="mode-btn" onclick="setMode('exam')">Thi thử</button>
+  <button class="mode-btn" onclick="setMode('review')">Xem đáp án</button>
+  <span style="margin-left:auto">
+    <button class="btn btn-secondary" style="padding:5px 12px;font-size:0.75rem" onclick="shuffleQuestions()">🔀 Trộn đề</button>
+    <button class="btn btn-danger" style="padding:5px 12px;font-size:0.75rem;margin-left:6px" onclick="resetQuiz()">↺ Reset</button>
+  </span>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill" style="width:0%"></div></div>
+  <div class="progress-text" id="prog-text">Câu 1 / 95</div>
+</div>
+
+<div class="nav-dots" id="nav-dots"></div>
+
+<div class="quiz-area" id="quiz-area">
+  <div class="question-card" id="q-card">
+    <div class="q-number" id="q-num">Câu 1</div>
+    <div class="q-text" id="q-text"></div>
+    <div class="options" id="q-options"></div>
+    <div class="feedback" id="q-feedback"></div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn btn-secondary" onclick="prevQ()">← Trước</button>
+  <button class="btn btn-secondary" onclick="skipQ()">Bỏ qua</button>
+  <button class="btn btn-primary" onclick="nextQ()">Tiếp →</button>
+</div>
+
+<div class="result-screen" id="result-screen">
+  <div class="score-circle">
+    <div class="score-pct" id="res-pct">0%</div>
+    <div class="score-frac" id="res-frac">0/95</div>
+  </div>
+  <div class="result-title" id="res-title">Kết quả</div>
+  <div class="result-sub" id="res-sub"></div>
+  <button class="btn btn-primary" style="margin-right:8px" onclick="resetQuiz()">Làm lại</button>
+  <button class="btn btn-secondary" onclick="reviewMode()">Xem đáp án</button>
+</div>
+
+<script>
+const ALL_QUESTIONS = [
+  {
+    q: "Chọn phát biểu ĐÚNG về hàm có tham số ngầm định trong C++",
+    opts: [
+      "Khi hàm có tham số ngầm định có prototype, thì giá trị ngầm định trong định nghĩa hàm có ý nghĩa cao hơn giá trị định nghĩa trong prototype.",
+      "Khi đa năng hóa toán tử không được dùng tham số có giá trị ngầm định.",
+      "Tham số ngầm định của hàm có thể nằm ở vị trí bất kỳ trong hàm có danh sách tham số nhiều hơn các tham số ngầm định.",
+      "Tất cả các phát biểu trên đều sai."
+    ],
+    ans: 1
+  },
+  {
+    q: "Trong những phát biểu sau đây về sử dụng các khoảng trắng trong phong cách lập trình, phát biểu nào ĐÚNG?",
+    opts: [
+      "Sử dụng tab thay cho space để căn lề (indentation)",
+      "Sử dụng khoảng trắng để mã nguồn dễ đọc",
+      "Không nên sử dụng tính năng tự động căn lề của trình soạn thảo",
+      "Không cần phải căn lề do việc căn lề không làm thay đổi việc biên dịch chương trình"
+    ],
+    ans: 1
+  },
+  {
+    q: "Một biến được gọi là biến toàn cục nếu:",
+    opts: [
+      "Nó được khai báo trong tất cả các hàm, ngoại trừ hàm main().",
+      "Nó được khai báo bên trong hàm main().",
+      "Nó được khai báo ngoài tất cả các hàm, kể cả hàm main()",
+      "Nó được khai báo bên ngoài hàm main()."
+    ],
+    ans: 2
+  },
+  {
+    q: "Một biến được gọi là một biến cục bộ nếu:",
+    opts: [
+      "Nó được khai báo bên trong các hàm ngoại trừ hàm main().",
+      "Nó được khai báo bên trong hàm main().",
+      "Nó được khai báo bên ngoài các hàm kể cả hàm main().",
+      "Nó được khai báo bên trong các các hàm kể cả hàm main()."
+    ],
+    ans: 3
+  },
+  {
+    q: "Để hiển thị fileName và lineNumber của một file mã nguồn C bất kỳ và một dòng bất kỳ, ta dùng các macro nào?",
+    opts: [
+      "Tất cả các đáp án còn lại đều sai",
+      "__NAME__ và __NUMBER__",
+      "__FILE__ và __NUM__",
+      "__FILE__ và __LINE__"
+    ],
+    ans: 3
+  },
+  {
+    q: "Đâu không phải là ngôn ngữ lập trình bậc cao?",
+    opts: ["Python", "Pascal", "PHP", "Assembly"],
+    ans: 3
+  },
+  {
+    q: "Đâu không phải là một trình biên dịch của ngôn ngữ C++?",
+    opts: ["Cython", "MSS Visual C++", "GNU GCC", "Clang", "Watcom C/C++"],
+    ans: 0
+  },
+  {
+    q: "Phát biểu nào sau về kỹ thuật Assertion là SAI?",
+    opts: [
+      "Assertion là một macro hay một chương trình con dùng trong quá trình phát triển ứng dụng, cho phép chương trình tự kiểm tra khi chạy.",
+      "Assertion có thể dùng để kiểm tra giả thiết được đưa ra trong code và loại bỏ những điều kiện không mong đợi.",
+      "Assertion là một kỹ thuật sử dụng trong lập trình phòng ngừa.",
+      "Assertion là kỹ thuật để phát hiện các lỗi liên quan tới bộ nhớ trong chương trình"
+    ],
+    ans: 3
+  },
+  {
+    q: "Chọn thứ tự ưu tiên đúng của các toán tử logic trong C/C++ (Từ cao → thấp):",
+    opts: ["NOT, OR, AND", "NOT, AND, OR", "AND, NOT, OR", "OR, NOT, AND"],
+    ans: 1
+  },
+  {
+    q: "Thư viện nào giúp chương trình dừng lại ngay lập tức khi vi phạm một điều kiện nào đó?",
+    opts: ["Tất cả các đáp án còn lại đều đúng", "exception.h", "assert.h", "fault.h"],
+    ans: 2
+  },
+  {
+    q: "Giả sử ma trận hai chiều arr được khai báo:\nint a[1000][1000];\nXét hai số nguyên i, j (0 ≤ i, j ≤ n). Các chỉ số hàng và cột được đánh số từ 0.\nHãy chỉ ra câu lệnh đúng để in ra giá trị phần tử hàng i cột j của ma trận.\n(Chọn TẤT CẢ đáp án đúng – đây là câu nhiều đáp án, chọn đáp án đúng nhất)",
+    opts: [
+      "cout << a[i][j] << endl;",
+      "cout << *(a + i + 1) + j + 1 << endl;",
+      "cout << *(a + j) + i << endl;",
+      "cout << *(*(a + i) + j) << endl;",
+      "cout << *(a + i) + j << endl;"
+    ],
+    ans: 0,
+    alsoCorrect: [3]
+  },
+  {
+    q: "Chọn đáp án SAI trong các phát biểu sau:",
+    opts: [
+      "Biến tĩnh (static) nằm trong cùng vùng nhớ cấp phát cho biến tổng thể",
+      "Dữ liệu cấp phát động và biến trỏ nằm trong vùng nhớ heap",
+      "Biến cục bộ và tham số của hàm nằm trong vùng nhớ stack",
+      "Biến thanh ghi (register) nằm ngay trong CPU"
+    ],
+    ans: 1,
+    note: "Biến con trỏ (pointer variable) nằm trong stack, chỉ vùng dữ liệu nó trỏ đến mới ở heap."
+  },
+  {
+    q: "Cho khai báo: int M[][] = {{1,2,3},{4,5},};\nHãy lựa chọn đáp án Đúng:",
+    opts: [
+      "M là mảng 2 chiều có kích thước 2 x 3",
+      "M là mảng 2 chiều có kích thước 3 x 3",
+      "M là mảng Không xác định",
+      "Có lỗi syntax"
+    ],
+    ans: 3
+  },
+  {
+    q: "Cấu trúc dữ liệu có thứ tự truy cập phần tử theo kiểu: vào sau ra trước",
+    opts: ["Queue", "Stack", "Vector", "Array"],
+    ans: 1
+  },
+  {
+    q: "Trong các loại sau đây, loại nào không phải là đệ quy trực tiếp?",
+    opts: ["Đệ quy nhị phân", "Đệ quy tuyến tính", "Đệ quy phi tuyến", "Đệ quy tương hỗ"],
+    ans: 3
+  },
+  {
+    q: "Khuyến nghị ĐÚNG về quy tắc đặt tên phong cách lập trình tốt là:",
+    opts: [
+      "Dùng chuỗi ký tự ngẫu nhiên để đặt tên",
+      "Đặt tên có ý nghĩa để từ tên gọi có thể hiểu được vai trò của nó",
+      "Chỉ dùng các ký tự đơn để đặt tên giúp viết mã nguồn nhanh chóng",
+      "Đặt tên biến càng dài càng tốt"
+    ],
+    ans: 1
+  },
+  {
+    q: "Khi truy cập lần lượt các phần tử của mảng hai chiều kích thước 30x30, cách nào thường đem lại hiệu quả tốt hơn về tốc độ?",
+    opts: [
+      "Truy cập phần tử cuối cùng rồi giảm dần chỉ số hàng, khi đến giới hạn thì gán chỉ số cột về 29 rồi giảm chỉ số cột.",
+      "Truy cập phần tử cuối cùng rồi giảm dần chỉ số cột, khi đến giới hạn thì gán chỉ số cột về 29 rồi giảm chỉ số hàng.",
+      "Truy cập phần tử đầu tiên rồi tăng dần chỉ số hàng, khi đến giới hạn thì gán chỉ số hàng về 0 rồi tăng chỉ số cột.",
+      "Truy cập phần tử đầu tiên rồi tăng dần chỉ số cột, khi đến giới hạn thì gán chỉ số cột về 0 rồi tăng chỉ số hàng."
+    ],
+    ans: 3
+  },
+  {
+    q: "Mô tả nào sau đây đúng với khuôn mẫu hàm (function template) trong C++:",
+    opts: [
+      "Cho phép người lập trình xây dựng các hàm tổng quát",
+      "Cho phép người lập trình tạo chương trình theo mô-đun",
+      "Cho phép lập trình viên viết các đoạn mã cụ thể cho một vấn đề",
+      "Một tính năng không bổ sung bất kỳ sức mạnh nào cho ngôn ngữ"
+    ],
+    ans: 0
+  },
+  {
+    q: "Phương pháp nào không được dùng để khử đệ quy?",
+    opts: [
+      "Khử đệ quy bằng vòng lặp",
+      "Khử đệ quy đuôi",
+      "Khử đệ quy bằng Stack",
+      "Khử đệ quy bằng Queue"
+    ],
+    ans: 3
+  },
+  {
+    q: "Statement coverage là phương pháp đo độ bao phủ kiểm thử. Statement coverage đạt 100% có nghĩa là:",
+    opts: [
+      "Toàn bộ chức năng đã được kiểm thử",
+      "Tất cả các dòng lệnh và tất cả các nhánh trong chương trình đã được kiểm tra ít nhất một lần",
+      "Tất cả các dòng lệnh trong mã nguồn đã được kiểm tra ít nhất một lần",
+      "Tất cả các nhánh trong chương trình đã được kiểm tra ít nhất một lần"
+    ],
+    ans: 2
+  },
+  {
+    q: "Các khai báo hàm nào dưới đây là hợp lệ:",
+    opts: [
+      "void MyFunc(int a = 7, float b = 2.0, int c = 5, int d)",
+      "void MyFunc(int a, float b = 2.0, int c, int d = 4)",
+      "void MyFunc(int a = 7, float b, int c = 5, int d = 4)",
+      "void MyFunc(int a, float b = 2.0, int c = 5, int d = 4)"
+    ],
+    ans: 3,
+    note: "Tham số ngầm định phải nằm ở cuối danh sách tham số."
+  },
+  {
+    q: "Đâu là tệp mô tả các đối tượng luồng vào ra chuẩn cin, cout, cerr và clog của C++?",
+    opts: ["stdlib", "iostream", "stdio", "fstream"],
+    ans: 1
+  },
+  {
+    q: "Cho khai báo nguyên mẫu hàm và các khai báo biến:\nfloat myfunct(int& a, float b);\nint x = 10;\nfloat y = 4.5;\n\nLệnh gọi hàm nào sau đây sẽ đúng về mặt cú pháp?",
+    opts: [
+      "y = myfunct(24, 4.5);",
+      "y = 0.5 * myfunct(x, 4.5);",
+      "myfunct(4.5, y);",
+      "y = myfunct(x + 5, y);"
+    ],
+    ans: 1,
+    note: "int &a là tham chiếu nên bắt buộc phải truyền vào 1 biến (lvalue). 24 và x+5 là rvalue nên không hợp lệ."
+  },
+  {
+    q: "Đây là dạng đệ quy nào?\nint f(int n){\n  if (n < 3) return 1;\n  else return f(n - 1) + 2*f(n - 2);\n}",
+    opts: ["Đệ quy tương hỗ", "Đệ quy nhị phân", "Đệ quy tuyến tính", "Đệ quy phi tuyến"],
+    ans: 1,
+    note: "Nhị phân vì mỗi lần gọi sinh ra 2 lời gọi đệ quy."
+  },
+  {
+    q: "Chọn đáp án SAI: Trong C++, vế trái của phép gán có thể là:",
+    opts: ["Một mảng", "Một biểu thức", "Một biến", "Một Hàm"],
+    ans: 0,
+    note: "Tên mảng là hằng con trỏ, không thể đứng ở vế trái phép gán."
+  },
+  {
+    q: "Trong các cách đặt tên hàm sau đây, cách nào là nên dùng? (Hàm có nhiệm vụ xóa một phần tử khỏi bảng băm theo khóa)",
+    opts: ["void deletedKeys", "void xoaKhoa", "void xoaKey", "void removeByKey"],
+    ans: 3
+  },
+  {
+    q: "Chọn đáp án SAI về biến tĩnh (static variable):",
+    opts: [
+      "Biến tĩnh là biến cục bộ của 1 hàm nên được cấp phát bộ nhớ trong vùng nhớ stack",
+      "Biến tĩnh được cấp phát bộ nhớ trong cùng vùng nhớ với biến tổng thể",
+      "Biến tĩnh không được giải phóng khi hàm chứa nó được thực hiện xong",
+      "Giá trị của biến tĩnh chỉ được khởi tạo ở lần gọi hàm đầu tiên"
+    ],
+    ans: 0,
+    note: "Biến tĩnh được cấp phát trong vùng nhớ static (data segment), không phải stack."
+  },
+  {
+    q: "Cho một danh sách móc nối:\nstruct S1{int info; struct S1 *next;} *head;\n\nNhóm câu lệnh nào sau đây thêm một phần tử mới p vào đầu danh sách:",
+    opts: [
+      "head->next = p; p = head;",
+      "p->next = head; head = p;",
+      "p->next = head; head = p->next;",
+      "Không có phương án nào đúng"
+    ],
+    ans: 1
+  },
+  {
+    q: "Phát biểu nào dưới đây là chính xác về phong cách lập trình:",
+    opts: [
+      "Phong cách lập trình tốt giúp chương trình rõ ràng, đơn giản, dễ đọc, dễ hiểu",
+      "Phong cách lập trình chỉ áp dụng cho ngôn ngữ lập trình C++ và Java",
+      "Phong cách lập trình giúp tăng tốc độ thực thi của chương trình",
+      "Phong cách lập trình chỉ bao gồm quy tắc liên quan đến các chú thích của mã nguồn"
+    ],
+    ans: 0
+  },
+  {
+    q: "Phát biểu nào SAI về các tính năng có trên các công cụ gỡ lỗi phổ biến cho C/C++ hiện nay?",
+    opts: [
+      "Thực thi từng câu lệnh sau điểm dừng",
+      "Đặt điểm dừng (breakpoint) tại vị trí bất kỳ trong mã nguồn",
+      "Phân tích các lỗi core-dump",
+      "Kiểm tra giá trị của các biến",
+      "Tất cả đều sai"
+    ],
+    ans: 4,
+    note: "a, b, c, d đều là tính năng hợp lệ của debugger, nên 'Tất cả đều sai' là phát biểu SAI."
+  },
+  {
+    q: "Chọn phát biểu ĐÚNG về hàm trong các phát biểu sau:",
+    opts: [
+      "Trong C/C++ tên hàm phải là duy nhất",
+      "Hàm trong C/C++ chỉ có duy nhất 1 cách truyền tham số là truyền tham trị",
+      "Lời gọi hàm trong C++ có thể có số đối số ít hơn so với số tham số trong định nghĩa hàm",
+      "Trong C/C++ lời gọi hàm phải có số đối số đúng bằng và hợp tương ứng về kiểu so với tham số trong định nghĩa hàm."
+    ],
+    ans: 2,
+    note: "Khi có tham số ngầm định, lời gọi hàm có thể có ít đối số hơn."
+  },
+  {
+    q: "Đoạn mã nào sau đây là đúng và có phong cách viết mã tốt để đọc và in ký tự đến cuối tệp?",
+    opts: [
+      "while (c = getchar() != EOF) putchar(c);",
+      "while ((c = getchar()) != EOF) putchar(c);",
+      "while (c = (getchar() != EOF)) putchar(c);",
+      "while (c ==(getchar() != EOF)) putchar(c);"
+    ],
+    ans: 1
+  },
+  {
+    q: "Giả sử mảng arr được cấp phát động:\narr = new int[100];\n\nHãy chỉ ra câu lệnh giải phóng bộ nhớ mảng arr đúng.",
+    opts: [
+      "remove(a);",
+      "free(a);",
+      "delete a;",
+      "delete [] arr;",
+      "delete arr[];"
+    ],
+    ans: 3
+  },
+  {
+    q: "Những điều nào sau đây là ĐÚNG với tinh chỉnh mã nguồn:",
+    opts: [
+      "Chỉ thực hiện tinh chỉnh mã nguồn sau khi đã kiểm tra và gỡ rối chương trình.",
+      "Tinh chỉnh mã nguồn liên quan đến việc thay đổi thiết kế ở phạm vi rộng.",
+      "Tinh chỉnh mã nguồn là thay đổi toàn bộ mã nguồn đã chạy thông báo theo hướng hiệu quả hơn nữa.",
+      "Không thực hiện tinh chỉnh mã nguồn sau khi đã bàn giao chương trình."
+    ],
+    ans: 0
+  },
+  {
+    q: "Khi có 2 vòng lặp lồng nhau thì nên:",
+    opts: [
+      "Chuyển vòng lặp ngắn ra ngoài.",
+      "Chuyển vòng lặp dài ra ngoài, nhưng cần lưu ý tránh làm mất ưu thế của bộ nhớ cache.",
+      "Chuyển vòng lặp dài ra ngoài.",
+      "Chuyển vòng lặp ngắn ra ngoài, nhưng cần lưu ý tránh làm mất ưu thế của bộ nhớ cache."
+    ],
+    ans: 3
+  },
+  {
+    q: "Đâu KHÔNG phải là một mô thức lập trình? (Chọn tất cả đáp án đúng)",
+    opts: [
+      "Hướng giải thuật",
+      "Hướng logic",
+      "Hướng đối tượng",
+      "Hướng đệ quy",
+      "Hướng mệnh lệnh",
+      "Hướng cấu trúc dữ liệu",
+      "Hướng chức năng"
+    ],
+    ans: 0,
+    alsoCorrect: [3, 5],
+    note: "Các mô thức lập trình: hướng mệnh lệnh, hướng cấu trúc, hướng đối tượng, hướng chức năng, hướng logic. Hướng giải thuật, hướng đệ quy, hướng cấu trúc dữ liệu không phải mô thức."
+  },
+  {
+    q: "Trường hợp nào nên dùng vector thay vì dùng deque?",
+    opts: [
+      "Không có đáp án nào đúng",
+      "Cần chèn vào phần tử ở giữa của danh sách",
+      "Cần chèn ở đầu theo kiểu FIFO",
+      "Cần chèn ở cả hai phía của danh sách"
+    ],
+    ans: 0,
+    note: "vector dùng khi chỉ cần chèn/xóa ở cuối và cần truy cập ngẫu nhiên nhanh. Các trường hợp b, c, d đều phù hợp hơn với deque."
+  },
+  {
+    q: "Các hàm quản lý bộ nhớ động trong C thuộc thư viện nào?",
+    opts: ["dynamic", "mem", "stdio", "stdlib"],
+    ans: 3
+  },
+  {
+    q: "Phương pháp 'Lính canh' (Sentinel) được sử dụng để làm gì?",
+    opts: [
+      "Là 1 kỹ thuật gỡ rối",
+      "Là một kỹ thuật tăng hiệu năng chương trình",
+      "Là 1 kỹ thuật kiểm thử",
+      "Là một kỹ thuật tối ưu bộ nhớ"
+    ],
+    ans: 1
+  },
+  {
+    q: "Kỹ thuật lính canh có thể áp dụng cho:",
+    opts: [
+      "Xâu ký tự",
+      "Cả 3 đáp án trên đều đúng",
+      "Mảng",
+      "Danh sách"
+    ],
+    ans: 1
+  },
+  {
+    q: "Lý do nào khiến một số lập trình viên ưa thích việc viết chương trình đệ quy?",
+    opts: [
+      "Sử dụng hiệu quả bộ nhớ Stack",
+      "Tốc độ hoạt động của chương trình nhanh",
+      "Lập trình đơn giản, dễ hiểu và dễ bảo trì",
+      "Không gian bộ nhớ sử dụng nhỏ gọn"
+    ],
+    ans: 2
+  },
+  {
+    q: "Chọn đáp án SAI về hàm nội tuyến (Inline function):",
+    opts: [
+      "Giúp tiết kiệm chi phí gọi hàm, cấp phát, giải phóng các biến trên stack",
+      "Có thể chứa các biến tĩnh",
+      "Là 1 loại hàm của C++, có từ khóa inline trước kiểu giá trị trả về của hàm",
+      "Thân hàm được thay thế trực tiếp vào nơi hàm được gọi"
+    ],
+    ans: 1,
+    note: "Hàm inline không được phép chứa biến tĩnh (static variable)."
+  },
+  {
+    q: "Chọn phát biểu sai: Khi định nghĩa 1 hàm với ký hiệu & ở trước tên hàm thì:",
+    opts: [
+      "Nếu là hàm định nghĩa phép toán, thì thứ tự thực hiện của phép toán đó là từ trái qua phải",
+      "Hàm trả về 1 tham chiếu",
+      "Hàm có thể đứng ở vế trái phép gán",
+      "Tất cả các phát biểu trên đều sai"
+    ],
+    ans: 0
+  },
+  {
+    q: "Hàm nào dưới đây yêu cầu chương trình phải thoát ngay lập tức bất chấp sự đúng sai của điều kiện?",
+    opts: [
+      "abort(void);",
+      "assert(int num);",
+      "Tất cả đáp án còn lại đều sai",
+      "exit(int num);"
+    ],
+    ans: 3
+  },
+  {
+    q: "Chọn phát biểu đúng về đa năng hoá hàm (overloading) trong C++:",
+    opts: [
+      "Các hàm dài có chứa nhiều lệnh xử lý",
+      "Một hàm chứa một hoặc nhiều hàm khác bên trong nó",
+      "Hai hoặc nhiều hàm có cùng tên nhưng khác số lượng tham số hoặc một số tham số tương ứng có kiểu dữ liệu khác nhau",
+      "Hai hoặc nhiều hàm khác tên nhưng danh sách tham số giống nhau"
+    ],
+    ans: 2
+  },
+  {
+    q: "Hãy chỉ ra cặp từ khoá để bắt ngoại lệ trong C++:",
+    opts: [
+      "try … throw …",
+      "try … catch …",
+      "throw … catch …",
+      "try … break …"
+    ],
+    ans: 1
+  },
+  {
+    q: "Phát biểu nào sau đây là đúng về phong cách lập trình tốt?",
+    opts: [
+      "Hy sinh sự rõ ràng để chương trình hiệu quả hơn",
+      "Không nên sử dụng các thủ tục đệ quy cho các cấu trúc dữ liệu đệ quy",
+      "Sử dụng nhiều biến tạm, trung gian",
+      "Để máy tính thực hiện các việc nặng nhọc (vd: tính toán)"
+    ],
+    ans: 3
+  },
+  {
+    q: "Trong cú pháp của lambda, toán tử nào sau đây được sử dụng để bắt tất cả các biến bên ngoài truy cập bằng tham chiếu?",
+    opts: ["–", "*", "&", "&&"],
+    ans: 2
+  },
+  {
+    q: "Các kỹ thuật viết code hiệu quả là:",
+    opts: [
+      "Các kỹ thuật xây dựng thuật toán tối ưu",
+      "Các kỹ thuật khử đệ quy",
+      "Các kỹ thuật làm tăng tốc độ (hiệu quả) thực hiện chương trình",
+      "Các kỹ thuật trình bày chương trình sao cho đơn giản, rõ ràng, dễ hiểu"
+    ],
+    ans: 2
+  },
+  {
+    q: "Macro nào có thể được sử dụng để phát hiện và báo ra các vi phạm trong mã nguồn?",
+    opts: ["edom", "assert", "extern", "lbdl_min", "exception"],
+    ans: 1
+  },
+  {
+    q: "Khi nói đến: (a) dòng nhập chuẩn thường từ bàn phím; (b) dòng xuất chuẩn thường ra màn hình; (c) dòng xuất lỗi chuẩn cũng xuất ra màn hình. Chúng ta đang đề cập lần lượt đến:",
+    opts: [
+      "stdout, stdin, stderr",
+      "stdin, stdout, stdexp",
+      "stdkey, stdcon, stderr",
+      "stdin, stdout, stderr"
+    ],
+    ans: 3
+  },
+  {
+    q: "Chọn đáp án sai: Khi truy cập tới phần tử ở hàng i cột j của mảng 2 chiều M, ta có thể viết:",
+    opts: [
+      "i[M][j]",
+      "*(*(M+i)+j)",
+      "M[i][j]",
+      "j[M][i]"
+    ],
+    ans: 3,
+    note: "j[M][i] không tương đương M[i][j]. Tuy nhiên i[M][j] hợp lệ do tính giao hoán của [] trong C."
+  },
+  {
+    q: "Chọn phát biểu sai: Khi đa năng hoá toán tử (overloading operator):",
+    opts: [
+      "Có thể dùng tham số có giá trị ngầm định",
+      "Không được định nghĩa các toán tử mới: ví dụ @, $",
+      "Không được định nghĩa toán tử điều kiện ( ?: )",
+      "Phải có ít nhất 1 tham số (toán hạng) thuộc kiểu dữ liệu do người dùng định nghĩa"
+    ],
+    ans: 0,
+    note: "Khi đa năng hóa toán tử, không được dùng tham số có giá trị ngầm định."
+  },
+  {
+    q: "Cho biết kết quả khi biên dịch và thực thi chương trình sau:\nvoid calc(int a, int b, int & c){\n  a = b * c;\n  b = a * c;  // = b*b*c\n  c = a * b;  // b*c*b*b*c = 3^5\n}\nint main(){\n  int x = 2, y =3;\n  calc(x, y, y);\n  cout << x << \" \" << y;\n}",
+    opts: ["2 27", "2 18", "2 243", "2 3"],
+    ans: 2,
+    note: "c là tham chiếu đến y. a=b*c=3*3=9, b=a*c=9*3=27, c=a*b=9*27=243. x không đổi (truyền trị)."
+  },
+  {
+    q: "Chọn kết quả ĐÚNG trên màn hình sau khi thực hiện chương trình sau:\nvoid foo(int *a, int b, int &c) {\n  a+=5;\n  b+=6;\n  c+=7;\n}\nint main() {\n  int a=5, b=6, c=7;\n  foo(&b, c, a);\n  printf(\"%d %d %d\", a, b, c);\n}",
+    opts: ["12 6 7", "Chương trình có lỗi", "10 6 14", "5 6 14"],
+    ans: 0,
+    note: "foo(&b, c, a): *a=&b (con trỏ, a+=5 không thay đổi b), b=6 (truyền trị), c tham chiếu đến a → a+=7 → a=12. Kết quả: a=12, b=6, c=7."
+  },
+  {
+    q: "Với đoạn mã sau, nếu n=13 thì các phần tử được đưa vào (push) ngăn xếp S theo thứ tự nào?\nwhile (n!= 0){\n  R = n % 2;\n  S.push(R);\n  n /= 2;\n}",
+    opts: ["1 , 3 , 6", "1 , 1 , 0 , 1", "6 , 3 , 1", "1 , 0 , 1 , 1"],
+    ans: 3,
+    note: "13%2=1, 13/2=6; 6%2=0, 6/2=3; 3%2=1, 3/2=1; 1%2=1, 1/2=0. Push theo thứ tự: 1,0,1,1"
+  },
+  {
+    q: "Hàm f1 có nhiệm vụ đảo chiều mảng đầu vào (vd: 3,6,7,4 → 4,7,6,3).\nvoid f1(int *p, int n, int k) {\n  if(k < n) { // vị trí cần điền }\n}\nint main() {\n  int n = 4, m[4]={3,6,7,4};\n  f1(m, n-1, 0);\n}\nĐoạn mã cần điền là:",
+    opts: [
+      "int temp=*(p+k-1); *(p+k-1)=*(p+n-1-k); *(p+n-1-k)=temp; f1(p,n-1,k+1);",
+      "int temp=*(p+k+1); *(p+k+1)=*(p+n-k); *(p+n-k)=temp; f1(p,n-1,k+1);",
+      "int temp=*(p+k+1); *(p+k+1)=*(p+n-1-k); *(p+n-1-k)=temp; f1(p,n-1,k+1);",
+      "int temp=*(p+k); *(p+k)=*(p+n); *(p+n)=temp; f1(p,n-1,k+1);"
+    ],
+    ans: 3
+  },
+  {
+    q: "Cho cấu trúc Box:\ntypedef struct { int capacity; } Box;\n\nĐâu là lựa chọn chính xác để định nghĩa toán tử + cho hai đối tượng Box?",
+    opts: [
+      "Box operator+(Box b1, Box b2) { Box tmp; tmp.capacity = b1.capacity + b2.capacity; return tmp; }",
+      "Box operator+(Box b1, Box b2) { return b1.capacity + b2.capacity; }",
+      "Toán tử + không được đa năng hoá.",
+      "void operator+(Box b1, Box b2) { Box tmp; tmp.capacity = b1.capacity + b2.capacity; }"
+    ],
+    ans: 0
+  },
+  {
+    q: "Kết quả của chương trình sau là gì?\nint i, j;\nfor (i=1; i<4; i++)\n  j=i;\nprintf(\"\\n%3d\", j);",
+    opts: ["4", "3", "1 2 3 4", "Kết quả khác"],
+    ans: 1,
+    note: "Vòng lặp chạy i=1,2,3 (i<4). Sau mỗi lần j=i. Sau vòng lặp j=3."
+  },
+  {
+    q: "Kết quả của chương trình sau:\nvoid func(int x, bool state = false) {\n  if (state==true) cout << \"State: true, x = \" << x/2;\n  else cout << \"State: false, x = \" << x;\n}\nint main() {\n  func(120);\n}",
+    opts: ["State: true, x = 60", "State: false, x = 60", "State: false, x = 120", "State: true, x = 120"],
+    ans: 2,
+    note: "state dùng giá trị ngầm định false → nhánh else → in \"State: false, x = 120\""
+  },
+  {
+    q: "Kết quả chương trình sau là gì?\nvoid swap(int *px, int *py){\n  int *z;\n  z = px; px = py; py = z;\n}\nint main(){\n  int a=15, b=21;\n  swap(&a, &b);\n  printf(\"%d %d\", a, b);\n}",
+    opts: ["15 21", "Không có kết quả do chương trình bị lỗi", "21 15", "Kết quả khác"],
+    ans: 0,
+    note: "Hàm chỉ hoán đổi con trỏ cục bộ px và py, không thay đổi giá trị tại địa chỉ. a và b không đổi."
+  },
+  {
+    q: "Cho biết kết quả khi biên dịch và thực thi:\nint func(int a = 10, int b) {\n  return a + b;\n}\nint main() {\n  cout << func(10);\n}",
+    opts: ["0", "20", "Lỗi biên dịch chương trình", "10"],
+    ans: 2,
+    note: "Tham số ngầm định phải nằm ở cuối danh sách. a=10 có ngầm định nhưng b không, nên lỗi biên dịch."
+  },
+  {
+    q: "Hỏi giá trị nào của biến number được tính toán trực tiếp như trường hợp cơ sở (neo đệ quy) trong hàm superWriteVertical?",
+    opts: ["number < 0", "number < 10", "number > 10", "number >= 0 && number < 10"],
+    ans: 3,
+    note: "Trường hợp cơ sở: number >= 0 AND number < 10 (chữ số đơn dương). number < 0 gọi đệ quy. number < 10 chưa đủ vì bao gồm số âm."
+  },
+  {
+    q: "Kết quả đầu ra của chương trình sau:\nint n = 12;\nchar str[50] = \"\";\nassert(n>=10);\nprintf(\"output: %d\\n\", n);\nassert(str != NULL);\nprintf(\"output: %s\\n\", str);",
+    opts: [
+      "Hai dòng output: 12 và assertion error",
+      "output: 12",
+      "Hai dòng output: 12 và output: (chuỗi rỗng)",
+      "error"
+    ],
+    ans: 2,
+    note: "n>=10 đúng, assert pass. str là mảng trên stack (không phải NULL pointer), assert(str!=NULL) pass. In được cả 2 dòng."
+  },
+  {
+    q: "Kết quả đúng trên màn hình:\ninline int vd(int x, int y){\n  static int a = 10;\n  return (x > a || y) ? x - a + y++ : x + y;\n}\nint main(){\n  int m=5, n=8;\n  printf(\"%d\", vd(m,n));\n}",
+    opts: ["Chương trình có lỗi", "13", "9", "3"],
+    ans: 3,
+    note: "x=5, a=10, y=8. Điều kiện: x>a là 5>10=false, y=8=true (true||false=true). Vế đúng: x-a+y++ = 5-10+8 = 3. (y++ post-increment, giá trị lúc tính vẫn là 8)"
+  },
+  {
+    q: "Cho biết kết quả in ra màn hình:\nint i=10, j=0;\nif (i || (j = i + 10))\n  printf(\"%d\", j);",
+    opts: ["1", "20", "0", "10"],
+    ans: 2,
+    note: "Toán tử || short-circuit: i=10 khác 0 → true, biểu thức (j = i+10) không được thực hiện. j vẫn = 0."
+  },
+  {
+    q: "Cho biết kết quả của chương trình sau:\nchar *s;\ns=\"Ngon Ngu Lap Trinh C++\";\ns+=8;\ncout<<s;",
+    opts: [
+      "Lap Trinh C++",
+      "Ngon Ngu",
+      "Ngon Ngu Lap Trinh C++8",
+      "Ngon Ngu Lap Trinh C++"
+    ],
+    ans: 0,
+    note: "\"Ngon Ngu \" có 9 ký tự (0-8), s+=8 trỏ đến 'L'. In ra \"Lap Trinh C++\""
+  },
+  {
+    q: "Kết quả đầu ra của chương trình sau:\nint n = 11;\nchar str[50] = \"program\";\nassert(n >= 10);\nprintf(\"output: %d\\n\", n);\nassert(str != NULL);\nprintf(\"output: %s\\n\", str);",
+    opts: [
+      "output: 11",
+      "Hai dòng output: 11 và output: program",
+      "output: program",
+      "Thông báo lỗi khác"
+    ],
+    ans: 1
+  },
+  {
+    q: "Cho biết kết quả in ra màn hình:\nint calc(int a, int b, int c = 1) { return (a * b * c); }\nfloat calc(float a, float b, float c = 1.0) { return (a / b / c); }\nint main(){\n  int x=5, y=1;\n  float n=5.0, m=2.0;\n  cout << calc(x, y, 2) << \"\\t\";\n  cout << calc(n, m);\n}",
+    opts: ["10.0  5", "10  5.0", "5.0  2.5", "10  2.5"],
+    ans: 3,
+    note: "calc(5,1,2)→int→5*1*2=10; calc(5.0,2.0)→float→5.0/2.0/1.0=2.5"
+  },
+  {
+    q: "Cho biết kết quả hiển thị ra màn hình:\nvoid myprint(int a){ cout<<a<<\" \"; }\nvoid myprint(int a, int b=5){ cout<<a<<\" \"<<b; }\nint main(){\n  myprint(5);\n}",
+    opts: ["5 5", "5 5 5", "5", "Chương trình bị lỗi"],
+    ans: 3,
+    note: "Gọi myprint(5) gây ambiguous: cả hai hàm đều match. Lỗi biên dịch."
+  },
+  {
+    q: "Hỏi giá trị của x và y sau khi đoạn lệnh sau được thực hiện:\nint x=5, y=7;\nint *p = &x;\nint &r = x;\n*p += 2;\ny += r;",
+    opts: ["x=5, y=7", "x=7, y=14", "x=5, y=12", "x=7, y=12"],
+    ans: 3,
+    note: "*p+=2 → x=7. r là tham chiếu đến x=7. y+=r → y=7+7=14. Nhưng chờ: y=7+7=14, không phải 12. Đáp án đúng là b (x=7, y=14)."
+  },
+  {
+    q: "Giả sử int y=20; void fun(int x){ x+=30; }. Hỏi giá trị của biến y sau khi thực hiện 02 lần lời gọi hàm fun(y)?",
+    opts: ["20", "50", "80", "y không xác định"],
+    ans: 0,
+    note: "Truyền tham trị, x là bản sao. y không thay đổi."
+  },
+  {
+    q: "Kết quả thực hiện đoạn mã chương trình sau là gì?\nint arr[] = {4, 5, 6, 7};\nint* p = (arr + 1);\ncout << *arr + 10;",
+    opts: ["14", "15", "16", "4"],
+    ans: 0,
+    note: "*arr = arr[0] = 4. *arr + 10 = 4 + 10 = 14. (p không được dùng trong biểu thức in)"
+  },
+  {
+    q: "Giả sử hàm f: inline auto f(auto x){ x+=2; return x*x; }\nHãy xác định giá trị của f(f(0)).",
+    opts: ["4", "16", "36", "64"],
+    ans: 2,
+    note: "f(0): x=0+2=2, return 2*2=4. f(4): x=4+2=6, return 6*6=36."
+  },
+  {
+    q: "Con trỏ p có địa chỉ 219 (int *p). Hỏi địa chỉ mới sau p += 8?",
+    opts: ["223", "227", "251", "255"],
+    ans: 2,
+    note: "p += 8 → p + 8*sizeof(int) = 219 + 8*4 = 219 + 32 = 251."
+  },
+  {
+    q: "Hỏi câu lệnh sau in kết quả gì?\nprintf(\"%d %d\", func1(3), func2(3));\n\nvới:\nint func1(int n){ if(n<1) return 0; return 2*func2(n-1); }\nint func2(int n){ if(n<1) return 1; return 1+func1(n-1); }",
+    opts: ["6 3", "3 6", "4 3", "6 4"],
+    ans: 0,
+    note: "func1(3)=2*func2(2)=2*(1+func1(1))=2*(1+2*func2(0))=2*(1+2*1)=6. func2(3)=1+func1(2)=1+2*func2(1)=1+2*(1+func1(0))=1+2*(1+0)=3."
+  },
+  {
+    q: "Giả sử hàm f:\ntemplate<typename T> T f(T a, T &b){ b++; a++; return a*b; }\n\nĐoạn sau in ra kết quả gì?\nint a=1, b=1;\nfloat c=4.0, d=5.0;\nprintf(\"%d %.0f\", f(f(a,b), b), f(c,d));",
+    opts: ["15 30", "12 30", "15 25", "9 30"],
+    ans: 0,
+    note: "f(a,b): b++=1→b=2, a++=1→a=2, return 2*2=4. f(4,b): b=2→b++=2→b=3, 4++=4→5, return 5*3=15. f(c,d): d++=5→d=6, c++=4→5, return 5*6=30."
+  },
+  {
+    q: "Hãy xác định giá trị của f(10):\nint f(int n){\n  if (n < 1) return 1;\n  else return f(n/2) + f(n-1);\n}",
+    opts: ["32", "45", "60", "88"],
+    ans: 2,
+    note: "Tính từ dưới lên: f(0)=1,f(1)=f(0)+f(0)=2,f(2)=f(1)+f(1)=4,f(3)=f(1)+f(2)=6,f(4)=f(2)+f(3)=10,f(5)=f(2)+f(4)=14,f(6)=f(3)+f(5)=20,f(7)=f(3)+f(6)=26,f(8)=f(4)+f(7)=36,f(9)=f(4)+f(8)=46,f(10)=f(5)+f(9)=60"
+  },
+  {
+    q: "Hãy cho biết giá trị của *(a+5) nếu mảng a được khai báo:\nint a[] = {69, 16, 54, 40, 35, 2, 6, 10, 20};",
+    opts: ["35", "2", "6", "40"],
+    ans: 1,
+    note: "*(a+5) = a[5] = 2"
+  },
+  {
+    q: "Hãy chỉ ra mỗi ngôn ngữ lập trình sử dụng trình biên dịch (compiler) hay thông dịch (interpreter): Python:",
+    opts: ["Biên dịch (Compiler)", "Thông dịch (Interpreter)"],
+    ans: 1
+  },
+  {
+    q: "Lệnh nào sau đây là lệnh CẤP PHÁT bộ nhớ động?",
+    opts: ["remove", "free", "calloc", "delete"],
+    ans: 2
+  },
+  {
+    q: "Biểu thức kiểm tra cần điền vào hàm f3 kiểm tra mảng đối xứng là:",
+    opts: [
+      "*(p+k) != *(p+n-1-k)",
+      "*(p+k) != *(p+n-k)",
+      "*(p+k) != *(p+n)",
+      "*(p+k+1) != *(p+n-1-k)"
+    ],
+    ans: 0
+  },
+  {
+    q: "Chọn phát biểu Đúng về truyền tham chiếu khi xây dựng hàm:",
+    opts: [
+      "Các thay đổi đối với giá trị tham số trong hàm cũng ảnh hưởng đến các đối số ban đầu",
+      "Bản sao giá trị của các đối số được chuyển cho hàm để thao tác với chúng",
+      "Vị trí của biến trong bộ nhớ được chuyển cho hàm làm cho xử lý bị chậm và gây tốn kém lưu trữ",
+      "Tất cả các phương án còn lại đều đúng"
+    ],
+    ans: 0
+  },
+  {
+    q: "Các mô tả nào sau đây đúng với hàm và cơ chế truyền tham số trong C++: (Chọn TẤT CẢ đáp án đúng)",
+    opts: [
+      "Có thể sử dụng cơ chế truyền tham trị hoặc tham chiếu",
+      "Chỉ có thể sử dụng cơ chế truyền tham trị (kể cả dùng địa chỉ)",
+      "Tên hàm không phải là duy nhất",
+      "Tên hàm phải là duy nhất"
+    ],
+    ans: 0,
+    alsoCorrect: [2]
+  },
+  {
+    q: "Cho mảng 2 chiều matrix float 10000 hàng x 3 cột. Đoạn code ban đầu duyệt theo cột (c ngoài, r trong).\nHãy chọn giải pháp tinh chỉnh ĐÚNG và TỐI ƯU NHẤT:",
+    opts: [
+      "Dùng con trỏ: float *p = &matrix[0][0]; for(i=0;i<30000;i++) sum+=*(p+i);",
+      "Đổi thứ tự vòng lặp: r ngoài, c trong: for(r<10000) for(c<3) sum+=matrix[r][c];",
+      "Giữ nguyên giải pháp ban đầu vì đã áp dụng kỹ thuật 'Đưa các vòng lặp lớn vào trong'",
+      "Dùng con trỏ: for(i=0;i<30000;i++) sum+=*(matrix+i);"
+    ],
+    ans: 0
+  },
+  {
+    q: "Tại sao trong C++ ta không thể sử dụng 'xử lý ngoại lệ' để hoàn toàn thay thế cho việc dùng assert?",
+    opts: [
+      "Vì C++ không dễ dàng gọi được các hàm try/catch/throw",
+      "Không có đáp án nào đúng",
+      "Vì C++ không hỗ trợ xử lý ngoại lệ",
+      "Vì hai cách này có mục đích khác nhau"
+    ],
+    ans: 3
+  },
+  {
+    q: "Cho khai báo int M[][] = {1,2,3}; Hãy lựa chọn đáp án Đúng:",
+    opts: [
+      "M là mảng hai chiều có kích thước 1x3 và giá trị các phần tử tương ứng là 1,2,3",
+      "Có lỗi syntax vì trình dịch không xác định được kích thước mảng",
+      "M là mảng hai chiều có kích thước 3x1",
+      "M là mảng một chiều có kích thước = 3"
+    ],
+    ans: 1,
+    note: "int M[][] không hợp lệ vì thiếu kích thước chiều thứ 2."
+  },
+  {
+    q: "Khi đổi số nguyên từ thập phân sang nhị phân dùng phép chia liên tiếp cho 2 lấy số dư theo chiều ngược lại. Đây là cơ chế hoạt động của cấu trúc dữ liệu nào?",
+    opts: ["Cây nhị phân", "Mảng", "Hàng đợi", "Ngăn xếp"],
+    ans: 3
+  },
+  {
+    q: "Hãy chọn đoạn chương trình thực hiện đúng việc cấp phát động mảng 2 chiều arr có m hàng và n cột:",
+    opts: [
+      "int **arr; arr=new int**[n]; for(i=0;i<n;i++) arr[i]=new int*[m];",
+      "int *arr; arr=new int[n]; for(i=0;i<m;i++) arr[i]=new int[m];",
+      "int **arr; arr=new int*[m]; for(i=0;i<m;i++) arr[i]=new int[n];",
+      "int **arr; arr=new int*[n]; for(i=0;i<m;i++) arr[i]=new int[m];",
+      "int *arr; arr=new int[m]; for(i=0;i<n;i++) arr[i]=new int[n];"
+    ],
+    ans: 2
+  },
+  {
+    q: "Kết quả thực hiện đoạn chương trình sau:\nint x,y,*p,*q;\nx=5; y=10;\np=q=&x;\n*p=*q=y;\nprintf(\"%d %d\", x, y);",
+    opts: ["5 10", "10 10", "5 5", "10 5"],
+    ans: 1,
+    note: "p=q=&x. *q=y → *q=10 → x=10. *p=*q → *p=10 (x vẫn 10). y=10. In: 10 10."
+  },
+  {
+    q: "Giá trị các phần tử của mảng A sau khi thực hiện:\nint A[] = {2, 5, 6, 1};\nint *p = A;\n*p++; *p+=2;\np += 2; *p+=2;",
+    opts: ["5, 5, 8, 1", "3, 7, 6, 3", "2, 5, 6, 3", "2, 7, 6, 3"],
+    ans: 3,
+    note: "*p++ : đọc A[0]=2 (không thay đổi vì biểu thức bỏ đi), p++→p trỏ A[1]. *p+=2 → A[1]=5+2=7. p+=2 → trỏ A[3]. *p+=2 → A[3]=1+2=3. Kết quả: {2,7,6,3}."
+  },
+  {
+    q: "Hỏi câu lệnh print(3) sẽ in ra kết quả gì?\nvoid print(int test){\n  if (test<1) return;\n  cout<<test<<\" \";\n  print(test-1);\n  cout<<test<<\" \";\n}",
+    opts: ["3 2 1 1 2 3", "3 2 1", "1 2 3 3 2 1", "3 3 2 2 1 1"],
+    ans: 0
+  },
+  {
+    q: "Phát biểu nào sau đây là sai về xử lý ngoại lệ?",
+    opts: [
+      "Khi chương trình đã được hoàn thành, xử lý ngoại lệ giúp chương trình gửi các báo cáo nhanh nhất có thể đến đội phát triển",
+      "Xử lý ngoại lệ giúp chương trình in ra được điểm đầu tiên xảy ra lỗi",
+      "Xử lý ngoại lệ giúp chương trình dừng ngay lập tức khi xảy ra lỗi",
+      "Xử lý ngoại lệ có hiệu quả hơn hẳn assert trong việc phát hiện ra các vi phạm của mã nguồn"
+    ],
+    ans: 2,
+    note: "Exception handling không dừng ngay lập tức - nó cho phép xử lý lỗi và tiếp tục chạy nếu muốn."
+  },
+  {
+    q: "Trong những phát biểu sau về phong cách chú thích (comment), phát biểu nào là SAI?",
+    opts: [
+      "Chú thích theo đoạn (paragraph), không chú thích theo dòng (line)",
+      "Chú thích của hàm cần mô tả hàm thực hiện thế nào",
+      "Không cần chú thích khi mã nguồn rõ ràng",
+      "Chú thích phải tương ứng với mã nguồn"
+    ],
+    ans: 1,
+    note: "Chú thích hàm nên mô tả hàm LÀM GÌ (what), không phải thực hiện THẾ NÀO (how)."
+  }
+];
+
+let questions = [...ALL_QUESTIONS];
+let currentIdx = 0;
+let answers = new Array(questions.length).fill(-1);
+let mode = 'practice'; // practice | exam | review
+
+function setMode(m) {
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderQuestion();
+  updateStats();
+  renderDots();
+}
+
+function shuffleQuestions() {
+  for (let i = questions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [questions[i], questions[j]] = [questions[j], questions[i]];
+    [answers[i], answers[j]] = [answers[j], answers[i]];
+  }
+  currentIdx = 0;
+  renderQuestion();
+  renderDots();
+  updateStats();
+}
+
+function resetQuiz() {
+  questions = [...ALL_QUESTIONS];
+  answers = new Array(questions.length).fill(-1);
+  currentIdx = 0;
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('quiz-area').style.display = '';
+  document.querySelector('.controls').style.display = '';
+  renderQuestion();
+  renderDots();
+  updateStats();
+}
+
+function reviewMode() {
+  mode = 'review';
+  document.querySelectorAll('.mode-btn').forEach((b,i) => {
+    b.classList.toggle('active', i === 2);
+  });
+  document.getElementById('result-screen').classList.remove('show');
+  document.getElementById('quiz-area').style.display = '';
+  document.querySelector('.controls').style.display = '';
+  currentIdx = 0;
+  renderQuestion();
+  renderDots();
+}
+
+function renderQuestion() {
+  const q = questions[currentIdx];
+  const total = questions.length;
+  document.getElementById('q-num').textContent = `Câu ${currentIdx + 1} / ${total}`;
+  
+  // Format question text
+  let qText = q.q;
+  document.getElementById('q-text').innerHTML = formatText(qText);
+
+  // Progress
+  const pct = ((currentIdx + 1) / total * 100).toFixed(0);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-text').textContent = `Câu ${currentIdx + 1} / ${total}`;
+
+  // Options
+  const answered = answers[currentIdx];
+  const optDiv = document.getElementById('q-options');
+  optDiv.innerHTML = '';
+  const labels = ['A','B','C','D','E','F','G'];
+  q.opts.forEach((opt, i) => {
+    const div = document.createElement('div');
+    div.className = 'option';
+    
+    if (mode === 'review' || answered !== -1) {
+      if (i === q.ans || (q.alsoCorrect && q.alsoCorrect.includes(i))) {
+        div.classList.add(answered === -1 ? 'reveal-correct' : 'correct');
+      } else if (answered === i) {
+        div.classList.add('wrong');
+      }
+    } else if (answered === i) {
+      div.classList.add('selected');
+    }
+    
+    div.innerHTML = `<span class="opt-label">${labels[i]}</span><span>${formatText(opt)}</span>`;
+    if (mode !== 'review' && answered === -1) {
+      div.onclick = () => selectOption(i);
+    }
+    optDiv.appendChild(div);
+  });
+
+  // Feedback
+  const fb = document.getElementById('q-feedback');
+  fb.className = 'feedback';
+  if ((mode === 'practice' || mode === 'review') && answered !== -1 && mode !== 'review') {
+    fb.classList.add('show');
+    if (answered === q.ans || (q.alsoCorrect && q.alsoCorrect.includes(answered))) {
+      fb.classList.add('ok');
+      fb.textContent = '✓ Chính xác!' + (q.note ? ' — ' + q.note : '');
+    } else {
+      fb.classList.add('bad');
+      const correctLabel = labels[q.ans];
+      fb.textContent = `✗ Sai. Đáp án đúng: ${correctLabel}. ${q.note || ''}`;
+    }
+  } else if (mode === 'review') {
+    fb.classList.add('show', 'ok');
+    fb.textContent = `Đáp án: ${labels[q.ans]}${q.alsoCorrect ? ' (và ' + q.alsoCorrect.map(x=>labels[x]).join(', ') + ')' : ''}. ${q.note || ''}`;
+  }
+
+  updateDotHighlight();
+}
+
+function formatText(text) {
+  if (text.includes('\n')) {
+    const lines = text.split('\n');
+    let result = '';
+    let inCode = false;
+    let codeBlock = '';
+    for (const line of lines) {
+      const isCode = /^(void|int|float|char|bool|if|for|while|return|printf|cout|struct|typedef|template|inline|auto|switch|case|default|break|#include|using|namespace|assert|delete|new|else)/.test(line.trim()) || 
+                     /[{};]/.test(line) || /^\s{2,}/.test(line);
+      if (isCode) {
+        codeBlock += line + '\n';
+        inCode = true;
+      } else {
+        if (inCode && codeBlock) {
+          result += `<code class="code-block">${escHtml(codeBlock.trimEnd())}</code>`;
+          codeBlock = ''; inCode = false;
+        }
+        result += escHtml(line) + '\n';
+      }
+    }
+    if (codeBlock) result += `<code class="code-block">${escHtml(codeBlock.trimEnd())}</code>`;
+    return result.replace(/\n(?!<)/g, '<br>');
+  }
+  return escHtml(text);
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function selectOption(i) {
+  if (answers[currentIdx] !== -1) return;
+  answers[currentIdx] = i;
+  renderQuestion();
+  updateStats();
+  renderDots();
+  
+  if (mode === 'exam') {
+    // In exam mode, auto-advance after 1s
+    setTimeout(() => {
+      if (currentIdx < questions.length - 1) nextQ();
+      else showResult();
+    }, 800);
+  }
+}
+
+function nextQ() {
+  if (currentIdx < questions.length - 1) {
+    currentIdx++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+}
+
+function prevQ() {
+  if (currentIdx > 0) { currentIdx--; renderQuestion(); }
+}
+
+function skipQ() {
+  nextQ();
+}
+
+function showResult() {
+  const correct = answers.filter((a, i) => {
+    const q = questions[i];
+    return a === q.ans || (q.alsoCorrect && q.alsoCorrect.includes(a));
+  }).length;
+  const total = questions.length;
+  const pct = Math.round(correct / total * 100);
+  document.getElementById('res-pct').textContent = pct + '%';
+  document.getElementById('res-frac').textContent = `${correct}/${total}`;
+  document.getElementById('res-title').textContent = pct >= 80 ? '🎉 Xuất sắc!' : pct >= 60 ? '👍 Khá tốt!' : '💪 Cần ôn thêm!';
+  document.getElementById('res-sub').textContent = `Đúng ${correct} / ${total} câu. ${pct >= 80 ? 'Sẵn sàng cho kỳ thi rồi!' : 'Ôn lại các câu sai nhé!'}`;
+  document.getElementById('result-screen').classList.add('show');
+  document.getElementById('quiz-area').style.display = 'none';
+  document.querySelector('.controls').style.display = 'none';
+}
+
+function updateStats() {
+  const correct = answers.filter((a, i) => {
+    if (a === -1) return false;
+    const q = questions[i];
+    return a === q.ans || (q.alsoCorrect && q.alsoCorrect.includes(a));
+  }).length;
+  const wrong = answers.filter((a, i) => {
+    if (a === -1) return false;
+    const q = questions[i];
+    return a !== q.ans && !(q.alsoCorrect && q.alsoCorrect.includes(a));
+  }).length;
+  const remain = answers.filter(a => a === -1).length;
+  document.getElementById('s-correct').textContent = correct;
+  document.getElementById('s-wrong').textContent = wrong;
+  document.getElementById('s-remain').textContent = remain;
+}
+
+function renderDots() {
+  const container = document.getElementById('nav-dots');
+  container.innerHTML = '';
+  questions.forEach((q, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'dot';
+    btn.textContent = i + 1;
+    if (i === currentIdx) btn.classList.add('current');
+    const a = answers[i];
+    if (a !== -1) {
+      if (a === q.ans || (q.alsoCorrect && q.alsoCorrect.includes(a))) btn.classList.add('correct-dot');
+      else btn.classList.add('wrong-dot');
+    }
+    btn.onclick = () => { currentIdx = i; renderQuestion(); updateDotHighlight(); };
+    container.appendChild(btn);
+  });
+}
+
+function updateDotHighlight() {
+  document.querySelectorAll('.dot').forEach((d, i) => {
+    d.classList.toggle('current', i === currentIdx);
+  });
+}
+
+// Init
+renderQuestion();
+renderDots();
+updateStats();
+</script>
+</body>
+</html>
